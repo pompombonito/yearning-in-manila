@@ -28,11 +28,11 @@ st.title("About Us")
 st.markdown(
 """
 <div class="">
-<p>I know what it feels like to hold onto words you cannot say. That heavy, quiet feeling of yearning and longing for someone from afar, waiting for a moment that might never arrive.</p>
+<p>We know what it feels like to hold onto words you cannot say. That heavy, quiet feeling of yearning and longing for someone from afar, waiting for a moment that might never arrive.</p>
 
 <p>This website was created because there are those who carry unsaid feelings. This platform is a safe space for anyone who feels the same way to finally express what is truly in their heart. And for those who are simply curious—yes, you can search your name. You never know who might be looking for you.</p>
 
-<p>My greatest hope is that this site helps build beautiful connections, sparks courage, or at the very least, provides a way to unburden the weight of things left unsaid. We believe deeply in the beauty of expression, so long as it remains kind, respectful, and rooted in our community's ethical standards.</p>
+<p>Our greatest hope is that this site helps build beautiful connections, sparks courage, or at the very least, provides a way to unburden the weight of things left unsaid. We believe deeply in the beauty of expression, so long as it remains kind, respectful, and rooted in our community's ethical standards.</p>
 
 <br>
 <strong>About the Developer</strong>
