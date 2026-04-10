@@ -125,7 +125,7 @@ def show_confession_page():
             st.warning("Database not connected.")
         else:
             with st.form("submission_form", clear_on_submit=True):
-                target = st.text_input("To (First Name/Nickname, School or Dept.[optional]): (e.g., Juan, Psychology)")
+                target = st.text_input("To (First Name/Nickname, School or Dept.[optional]): (e.g., Juan, Dent)")
                 msg_body = st.text_area("Your message:")
                 song_link = st.text_input("Soundtrack (Optional):", placeholder="Paste a Spotify track link here...")
                 
