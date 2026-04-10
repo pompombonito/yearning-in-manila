@@ -18,17 +18,25 @@ def get_spotify_embed_url(link):
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-def check_password():
-    if st.session_state.password_input == st.secrets["admin"]["password"]:
+# --- UPDATED AUTHENTICATION LOGIC ---
+def check_credentials():
+    # Checks both username and password against your secrets file
+    if (st.session_state.username_input == st.secrets["admin"]["username"] and 
+        st.session_state.password_input == st.secrets["admin"]["password"]):
         st.session_state.logged_in = True
+        # Clear the inputs so they don't linger in the background
+        st.session_state.username_input = ""
         st.session_state.password_input = "" 
     else:
-        st.error("Incorrect password.")
+        st.error("Incorrect username or password.")
 
 if not st.session_state.logged_in:
     st.title("🔒 Admin Access")
-    st.text_input("Enter Password:", type="password", key="password_input", on_change=check_password)
+    st.text_input("Enter Username:", key="username_input")
+    st.text_input("Enter Password:", type="password", key="password_input")
+    st.button("Login", on_click=check_credentials) # Uses a button instead of hitting Enter
     st.stop() 
+# ------------------------------------
 
 @st.cache_resource
 def get_sheet():
