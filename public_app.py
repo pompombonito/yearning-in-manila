@@ -1,7 +1,7 @@
 import streamlit as st
 import gspread
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import pandas as pd
 from google.oauth2.service_account import Credentials
@@ -143,7 +143,7 @@ def show_confession_page():
                             featured_val = "Requested" if wants_featured else "No"
                             
                             sheet.append_row([
-                                datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
+                                (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S"), 
                                 get_hashed_ip(), 
                                 target, 
                                 msg_body, 
