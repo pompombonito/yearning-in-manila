@@ -163,7 +163,7 @@ def show_confession_page():
     # --- TAB 2: SEARCH / READ ---
     with tab2:
         st.subheader("Find messages for you")
-        search_query = st.text_input("Search by Name:", placeholder="Type a name...")
+        search_query = st.text_input("Search by Name/School/Dept.:", placeholder="Type a name...")
         
         st.caption("💡 *Tip: If your name/nickname is only 1-2 letters long (e.g., 'AJ', 'Bo'), or if you want to find your exact name without seeing similar ones (e.g., searching 'Dan' without seeing 'Daniel'), toggle the checkbox below.*")
         exact_match = st.checkbox("☑️ Exact name match")
