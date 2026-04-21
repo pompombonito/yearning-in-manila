@@ -212,11 +212,6 @@ def show_confession_page():
                     else:
                         st.write("The board is currently empty.")
 
-    st.markdown(
-        '<p class="pink-text">All submissions are anonymous. Any submission that contains sensitive data will be flagged by the system and therefore rejected. </p>'
-        '<p class="pink-text">For comments, suggestions, and takedown requests, use the "Send a Message" feature. (To: ADMIN; then state your message) </p>',
-        unsafe_allow_html=True
-    )
 
 # --- EXECUTION LOGIC ---
 try:
@@ -289,3 +284,9 @@ if len(raw_data) > 1:
                     st.caption(f"Posted on: {row.get('Timestamp', '')}")
         else:
             st.write("No featured entries yet. Keep checking back!")
+
+st.markdown(
+        '<p class="pink-text">All submissions are anonymous. Any submission that contains sensitive data will be flagged by the system and therefore rejected. </p>'
+        '<p class="pink-text">For comments, suggestions, and takedown requests, use the "Send a Message" feature. (To: ADMIN; then state your message) </p>',
+        unsafe_allow_html=True
+    )
