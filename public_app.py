@@ -10,13 +10,69 @@ import streamlit.components.v1 as components
 # --- 1. INITIAL CONFIG ---
 st.set_page_config(page_title="Yearning in Manila | CEU Manila", page_icon="💌")
 
-# <-- NEW: THE GLOBAL BANNER -->
+# <-- THE GLOBAL BANNER -->
 st.markdown(
     "<p style='text-align: center; color: #FFB6C1; font-style: italic; font-family: \"Times New Roman\", Times, serif;'>"
     "✨ Welcome to Yearning in Manila v1.0! More features are coming soon, so stay tuned... ✨</p>", 
     unsafe_allow_html=True
 )
 st.divider() # Adds a nice faded line under the banner
+
+# --- FEATURED HELPERS ---
+def get_spotify_embed_url_featured(link):
+    if isinstance(link, str) and "spotify.com" in link and "track/" in link:
+        try:
+            return f"https://open.spotify.com/embed/track/{link.split('track/')[1].split('?')[0]}"
+        except:
+            return None
+    return None
+
+@st.cache_resource
+def get_featured_data():
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scopes)
+    client = gspread.authorize(creds)
+    return client.open_by_key("1cx__6k5O3s3FocpYWkuUc_sYso4mDexKxaXvie5jrSo").sheet1
+
+def show_featured_entries():
+    style = """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+    .pink-text { color: #FFB6C1; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.5; }
+    </style>
+    """
+    st.markdown(style, unsafe_allow_html=True)
+    st.title("Featured Entries")
+
+    sheet = get_featured_data()
+    raw_data = sheet.get_all_values()
+
+    if len(raw_data) > 1:
+        df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
+        
+        # SAFETY: Only show entries that are Approved AND marked as "Yes" for Featured
+        if "Status" in df.columns and "Featured" in df.columns:
+            featured_df = df[(df["Status"] == "Approved") & (df["Featured"] == "Yes")]
+            
+            if not featured_df.empty:
+                # We reverse the order so the newest featured posts show at the top!
+                for _, row in featured_df.iloc[::-1].iterrows():
+                    with st.container(border=True):
+                        st.info(f"💌 **To: {row.get('Target_Name', 'Unknown')}**")
+                        st.write(row.get('Message', ''))
+                        
+                        # Embed Song if it has one
+                        song_link = row.get('Song_Link', '')
+                        if pd.notna(song_link) and str(song_link).strip():
+                            embed_url = get_spotify_embed_url_featured(str(song_link))
+                            if embed_url:
+                                components.html(
+                                    f'<iframe style="border-radius:12px" src="{embed_url}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>',
+                                    height=90
+                                )
+                        st.caption(f"Posted on: {row.get('Timestamp', '')}")
+            else:
+                st.write("No featured entries yet. Keep checking back!")
 
 def show_confession_page():
     # --- 3. THEME & UI ---
@@ -81,20 +137,15 @@ def show_confession_page():
         if any(w in msg for w in PROFANITY_WORDS): return "Profanity"
         return "Safe"
         
-    # <-- NEW: SPOTIFY VALIDATOR -->
     def is_valid_spotify_link(link):
-        """Checks if the link is a valid Spotify Track URL"""
         if not link: 
-            return True # Empty links are allowed since the soundtrack is optional
-            
-        # This Regex ensures the link starts with open.spotify.com/track/ followed by an ID
+            return True 
         pattern = r"^https?://open\.spotify\.com/track/[a-zA-Z0-9]+"
         return bool(re.match(pattern, link.strip()))
 
     def get_spotify_embed_url(link):
         if isinstance(link, str) and "open.spotify.com/track/" in link:
             try:
-                # Extracts the track ID and ignores extra tracking tags like "?si=123"
                 track_id = link.split("track/")[1].split("?")[0]
                 return f"https://open.spotify.com/embed/track/{track_id}"
             except:
@@ -130,14 +181,12 @@ def show_confession_page():
                 song_link = st.text_input("Soundtrack (Optional):", placeholder="Paste a Spotify track link here...")
                 
                 wants_featured = st.checkbox("🌟 I want this to be considered for the Featured page")
-                
                 submitted = st.form_submit_button("Send Anonymously")
 
                 if submitted:
                     if target and msg_body:
-                        # <-- NEW: INTERCEPT INVALID SPOTIFY LINKS -->
                         if song_link and not is_valid_spotify_link(song_link):
-                            st.error("❌ Invalid Spotify link detected. Please check for typos and ensure you are sharing a 'Song' link, not a playlist or album. (Example: https://open.spotify.com/track/...)")
+                            st.error("❌ Invalid Spotify link detected. Please check for typos and ensure you are sharing a 'Song' link, not a playlist or album.")
                         else:
                             cat = categorize_entry(msg_body)
                             featured_val = "Requested" if wants_featured else "No"
@@ -149,7 +198,7 @@ def show_confession_page():
                                 msg_body, 
                                 "Pending", 
                                 cat,
-                                song_link.strip() if song_link else "", # Clean up accidental spaces
+                                song_link.strip() if song_link else "", 
                                 featured_val 
                             ])
                             
@@ -173,10 +222,8 @@ def show_confession_page():
             
             if not search_query:
                 st.warning("⚠️ Please type a name to search.")
-                
             elif not exact_match and len(search_query) < 3:
                 st.warning("⚠️ Please enter at least 3 characters. For shorter names, please check the 'Exact name match' box above.")
-                
             else:
                 if sheet is None:
                     st.error("Database unavailable.")
@@ -205,70 +252,17 @@ def show_confession_page():
                                                 f'<iframe style="border-radius:12px" src="{embed_url}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>',
                                                 height=90
                                             )
-                                            
+                                        
                                     st.caption(f"Posted on: {row['Timestamp']}")
                         else:
                             st.info("No approved messages found for this name yet.")
                     else:
                         st.write("The board is currently empty.")
 
-style = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
-.pink-text { color: #FFB6C1; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.5; }
-</style>
-"""
-st.markdown(style, unsafe_allow_html=True)
+    # --- CALL THE FEATURED SECTION ONLY AT THE BOTTOM OF THE HOME PAGE ---
+    st.divider()
+    show_featured_entries()
 
-st.title("Featured Entries")
-
-# Spotify Helper
-def get_spotify_embed_url(link):
-    if isinstance(link, str) and "spotify.com" in link and "track/" in link:
-        try:
-            return f"https://open.spotify.com/embed/track/{link.split('track/')[1].split('?')[0]}"
-        except:
-            return None
-    return None
-
-# Connect to database
-@st.cache_resource
-def get_featured_data():
-    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scopes)
-    client = gspread.authorize(creds)
-    return client.open_by_key("1cx__6k5O3s3FocpYWkuUc_sYso4mDexKxaXvie5jrSo").sheet1
-
-sheet = get_featured_data()
-raw_data = sheet.get_all_values()
-
-if len(raw_data) > 1:
-    df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-    
-    # SAFETY: Only show entries that are Approved AND marked as "Yes" for Featured
-    if "Status" in df.columns and "Featured" in df.columns:
-        featured_df = df[(df["Status"] == "Approved") & (df["Featured"] == "Yes")]
-        
-        if not featured_df.empty:
-            # We reverse the order so the newest featured posts show at the top!
-            for _, row in featured_df.iloc[::-1].iterrows():
-                with st.container(border=True):
-                    st.info(f"💌 **To: {row.get('Target_Name', 'Unknown')}**")
-                    st.write(row.get('Message', ''))
-                    
-                    # Embed Song if it has one
-                    song_link = row.get('Song_Link', '')
-                    if pd.notna(song_link) and str(song_link).strip():
-                        embed_url = get_spotify_embed_url(str(song_link))
-                        if embed_url:
-                            components.html(
-                                f'<iframe style="border-radius:12px" src="{embed_url}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>',
-                                height=90
-                            )
-                    st.caption(f"Posted on: {row.get('Timestamp', '')}")
-        else:
-            st.write("No featured entries yet. Keep checking back!")
-            
 # --- EXECUTION LOGIC ---
 try:
     pages = {
@@ -282,6 +276,7 @@ try:
     pg.run()
 except Exception as e:
     show_confession_page()
+
 
 st.markdown(
         '<p class="pink-text">All submissions are anonymous. Any submission that contains sensitive data will be flagged by the system and therefore rejected. </p>'
