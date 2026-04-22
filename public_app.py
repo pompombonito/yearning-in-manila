@@ -212,22 +212,6 @@ def show_confession_page():
                     else:
                         st.write("The board is currently empty.")
 
-
-# --- EXECUTION LOGIC ---
-try:
-    pages = {
-        "Confessions": st.Page(show_confession_page, title="Yearning in Manila", default=True),
-        "Featured": st.Page("Featured.py", title="🌟 Featured Entries 🌟"), 
-        "About": st.Page("About.py", title="About Us"),
-        "Terms": st.Page("TaC.py", title="Terms & Conditions"),
-        "Privacy": st.Page("Privacy.py", title="Privacy Protection")
-    }
-    pg = st.navigation(list(pages.values()))
-    pg.run()
-except Exception as e:
-    show_confession_page()
-
-
 style = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
@@ -284,6 +268,20 @@ if len(raw_data) > 1:
                     st.caption(f"Posted on: {row.get('Timestamp', '')}")
         else:
             st.write("No featured entries yet. Keep checking back!")
+            
+# --- EXECUTION LOGIC ---
+try:
+    pages = {
+        "Confessions": st.Page(show_confession_page, title="Yearning in Manila", default=True),
+        "Featured": st.Page("Featured.py", title="🌟 Featured Entries 🌟"), 
+        "About": st.Page("About.py", title="About Us"),
+        "Terms": st.Page("TaC.py", title="Terms & Conditions"),
+        "Privacy": st.Page("Privacy.py", title="Privacy Protection")
+    }
+    pg = st.navigation(list(pages.values()))
+    pg.run()
+except Exception as e:
+    show_confession_page()
 
 st.markdown(
         '<p class="pink-text">All submissions are anonymous. Any submission that contains sensitive data will be flagged by the system and therefore rejected. </p>'
